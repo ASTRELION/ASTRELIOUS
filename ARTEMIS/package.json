@@ -1,0 +1,15 @@
+{
+  "name": "artemis",
+  "version": "1.0.0",
+  "description": "Discord bot by ASTRELION#4600",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ashton Nelson",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "eslint": "^4.19.1",
+    "nodemon": "^1.17.3"
+}
