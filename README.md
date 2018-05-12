@@ -1,2 +1,2 @@
-# ARTEMIS
-Test of Discord.js
+# ASTRELIOUS
+Discord self-bot using Discord.js
