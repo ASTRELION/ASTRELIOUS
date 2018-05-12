@@ -5,7 +5,7 @@ const { prefix, token } = require("./config.json");
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync("./commands");
-
+// This is a change
 for (const file of commandFiles)
 {
     const command = require(`./commands/${file}`);
