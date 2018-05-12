@@ -1,2 +1,2 @@
 # ARTEMIS
-Test of Discord.js
+Discord self-bot using Discord.js
