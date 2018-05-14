@@ -9,7 +9,19 @@ const commandFiles = fs.readdirSync("./commands");
 for (const file of commandFiles)
 {
     const command = require(`./commands/${file}`);
-    client.commands.set(command.name, command);
+
+    if ("commands" in command)
+    {
+        for (let i = 0; i < command.commands.length; i++)
+        {
+            for (command.commands[i] in command)
+            {
+                client.commands.set(command.commands[i], command[command.commands[i]]);
+            }
+        }
+    }
+
+    console.log(client.commands);
 }
 
 client.on("ready", () =>
