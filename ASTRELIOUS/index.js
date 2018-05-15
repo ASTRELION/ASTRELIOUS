@@ -6,29 +6,31 @@ const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync("./commands");
 
+// Load commands
 for (const file of commandFiles)
 {
     const command = require(`./commands/${file}`);
+    let commandString = "Module Loaded: ";
 
     if ("commands" in command)
     {
         for (let i = 0; i < command.commands.length; i++)
         {
-            for (command.commands[i] in command)
-            {
-                client.commands.set(command.commands[i], command[command.commands[i]]);
-            }
+            commandString += command.commands[i] + " ";
+            client.commands.set(command.commands[i], command[command.commands[i]]);
         }
     }
 
-    console.log(client.commands);
+    console.log(commandString);
 }
 
+// Ready event
 client.on("ready", () =>
 {
     console.log("Ready!");
 });
 
+// Handle command
 client.on("message", message =>
 {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
@@ -40,15 +42,13 @@ client.on("message", message =>
 
     try
     {
-        client.commands.get(command).execute(message, args);
+        client.commands.get(command).execute(client, message, args);
     }
     catch (error)
     {
         console.error(error);
         message.reply("There was an error trying to execute that command!");
     }
-
-    console.log(message.content);
 });
 
 client.login(token);
