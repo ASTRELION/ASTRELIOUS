@@ -1,53 +1,69 @@
-const fs = require("fs");
-const Discord = require("discord.js");
-const { prefix, token } = require("./config.json");
+const { CommandoClient } = require("discord.js-commando");
+const path = require("path");
 
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync("./commands");
+const { prefix, token, ownerID } = require("./config.json");
 
-// Load commands
-for (const file of commandFiles)
+const client = new CommandoClient(
 {
-    const command = require(`./commands/${file}`);
-    let commandString = "Module Loaded: ";
+    commandPrefix: prefix,
+    owner: ownerID,
+    selfbot: true,
+    unknownCommandResponse: false,
+    nonCommandEditable: false,
+    commandEditableDuration: 0
+});
 
-    if ("commands" in command)
-    {
-        for (let i = 0; i < command.commands.length; i++)
-        {
-            commandString += command.commands[i] + " ";
-            client.commands.set(command.commands[i], command[command.commands[i]]);
-        }
-    }
+client.registry
+    .registerDefaultTypes()
+    .registerGroups([
+        ["general", "General"],
+        ["utility", "Utility"]
+    ])
+    .registerCommandsIn(path.join(__dirname, "commands"));
 
-    console.log(commandString);
-}
+    const Enmap = require("enmap");
+    const EnmapLevel = require("enmap-level");
+    client.clientStats = new Enmap({ provider: new EnmapLevel({ name: "clientStats", persistent: true }) });
 
-// Ready event
 client.on("ready", () =>
 {
+    // Create new stat object if none exists
+    if (client.clientStats.get(client.user.id) == null)
+    {
+        const stats =
+        {
+            messagesSent: 0,
+            messagesReceived: 0,
+            commandsIssued: 0,
+            mentions: 0,
+        };
+
+        client.clientStats.set(client.user.id, stats);
+        console.log(`> Client stats created for ${client.user.id}`);
+    }
+
     console.log("Ready!");
 });
 
-// Handle command
-client.on("message", message =>
+client.on("message", (msg) =>
 {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-    const args = message.content.slice(prefix.length).split(/ +/);
-    const command = args.shift().toLowerCase();
-
-    if (!client.commands.has(command)) return;
-
-    try
+    if (msg.author.id == client.user.id)
     {
-        client.commands.get(command).execute(client, message, args);
+        const stats = client.clientStats.get(client.user.id);
+        stats.messagesSent += 1;
+
+        if (msg.content.startsWith(client.commandPrefix)) stats.commandsIssued += 1;
+
+        client.clientStats.set(client.user.id, stats);
     }
-    catch (error)
+    else
     {
-        console.error(error);
-        message.reply("There was an error trying to execute that command!");
+        const stats = client.clientStats.get(client.user.id);
+        stats.messagesReceived += 1;
+
+        if (msg.isMentioned(client.user)) stats.mentions += 1;
+
+        client.clientStats.set(client.user.id, stats);
     }
 });
 
