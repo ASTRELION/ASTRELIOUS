@@ -24,6 +24,7 @@ client.registry
     const Enmap = require("enmap");
     const EnmapLevel = require("enmap-level");
     client.clientStats = new Enmap({ provider: new EnmapLevel({ name: "clientStats", persistent: true }) });
+    client.polls = new Enmap({ provider: new EnmapLevel({ name: "polls", persistent: true }) });
 
 client.on("ready", () =>
 {
@@ -64,6 +65,30 @@ client.on("message", (msg) =>
         if (msg.isMentioned(client.user)) stats.mentions += 1;
 
         client.clientStats.set(client.user.id, stats);
+    }
+});
+
+client.on("messageReactionAdd", (reaction, user) =>
+{
+    const pollData = client.polls.get(client.user.id);
+    if (pollData != null && 
+        reaction.message.id == pollData.pollMessageID)
+    {
+        const poll = require("./commands/general/poll.js");
+        console.log(poll.numbers);
+        const numbers = poll.numbers;
+        const i = numbers.indexOf(reaction.emoji.name);
+        
+        if (i >= 0 && i < pollData.pollOptions.length) // && !pollData.voters.includes(user.id)
+        {
+            pollData.pollVotes[i] += 1;
+        }
+        
+        const gen = new poll.GeneratePoll();
+        gen.generatePoll(reaction.message, pollData).then(embed => 
+        {
+            reaction.message.edit("", { embed });
+        });
     }
 });
 
